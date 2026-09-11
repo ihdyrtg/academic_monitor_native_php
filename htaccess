@@ -1,0 +1,14 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Lindungi file konfigurasi dan source internal jika seluruh project
+    # berada di dalam htdocs hosting.
+    RewriteRule (^|/)\.env(?:\.example)?$ - [F,L,NC]
+    RewriteRule ^(?:app|database|legacy|scripts|storage|views)(?:/|$) - [F,L,NC]
+</IfModule>
+
+<FilesMatch "(^\.|\.sql$|\.md$|\.log$|\.ini$)">
+    Require all denied
+</FilesMatch>

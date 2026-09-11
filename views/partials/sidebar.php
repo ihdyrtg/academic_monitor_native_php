@@ -1,6 +1,12 @@
 <aside class="sidebar" id="sidebar">
     <div class="brand">
-        <div class="brand-mark">AM</div>
+        <div class="brand-mark">
+    <img
+        src="<?= e(app_url('assets/images/logo.png')) ?>"
+        alt="Logo Academic Monitor"
+    >
+</div>
+
         <div>
             <h1><?= e($classContext['name'] ?? 'Academic Monitor') ?></h1>
             <p><?= e($classContext['course_name'] ?? 'Multi kelas • multi mata kuliah') ?></p>

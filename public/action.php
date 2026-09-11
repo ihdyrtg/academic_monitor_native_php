@@ -104,6 +104,8 @@ try {
         'special.save',
         'seat.move',
         'logs.clear',
+        'portal_pin.save',
+        'portal_pin.clear',
     ];
 
     if (in_array($action, $classActions, true)) {
@@ -518,6 +520,50 @@ try {
         case 'logs.clear':
             $repository->clearLogs($classId);
             flash('success', 'Log aktivitas kelas dibersihkan.');
+            break;
+
+
+        case 'portal_pin.save':
+            $enrollmentId = post_int('enrollment_id');
+            $pin = trim((string) ($_POST['portal_pin'] ?? ''));
+
+            if (preg_match('/^\d{6}$/', $pin) !== 1) {
+                throw new RuntimeException(
+                    'PIN mahasiswa harus terdiri dari tepat 6 digit angka.'
+                );
+            }
+
+            $student = $repository->enrollment($classId, $enrollmentId);
+            if (!$student) {
+                throw new RuntimeException('Mahasiswa tidak ditemukan.');
+            }
+
+            $repository->setStudentPortalPin($classId, $enrollmentId, $pin);
+            $repository->log(
+                $classId,
+                (int) $user['id'],
+                'Portal',
+                'PIN portal mahasiswa ' . $student['nim'] . ' diperbarui.'
+            );
+            flash('success', 'PIN portal mahasiswa berhasil disimpan.');
+            break;
+
+        case 'portal_pin.clear':
+            $enrollmentId = post_int('enrollment_id');
+
+            $student = $repository->enrollment($classId, $enrollmentId);
+            if (!$student) {
+                throw new RuntimeException('Mahasiswa tidak ditemukan.');
+            }
+
+            $repository->setStudentPortalPin($classId, $enrollmentId, null);
+            $repository->log(
+                $classId,
+                (int) $user['id'],
+                'Portal',
+                'PIN portal mahasiswa ' . $student['nim'] . ' dinonaktifkan.'
+            );
+            flash('success', 'PIN portal mahasiswa dinonaktifkan.');
             break;
 
         case 'settings.save':

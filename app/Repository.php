@@ -321,6 +321,89 @@ final class Repository
         });
     }
 
+
+    public function studentByNim(string $nim): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, nim, name, email, phone, portal_pin_hash
+             FROM students
+             WHERE nim = :nim
+             LIMIT 1'
+        );
+        $stmt->execute(['nim' => $nim]);
+
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public function studentById(int $studentId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, nim, name, email, phone, portal_pin_hash
+             FROM students
+             WHERE id = :id
+             LIMIT 1'
+        );
+        $stmt->execute(['id' => $studentId]);
+
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public function verifyStudentPortalPin(string $nim, string $pin): ?array
+    {
+        $student = $this->studentByNim($nim);
+        if (!$student) {
+            return null;
+        }
+
+        $hash = trim((string) ($student['portal_pin_hash'] ?? ''));
+        if ($hash === '' || !password_verify($pin, $hash)) {
+            return null;
+        }
+
+        return $student;
+    }
+
+    public function setStudentPortalPin(
+        int $classId,
+        int $enrollmentId,
+        ?string $pin
+    ): void {
+        $enrollment = $this->enrollment($classId, $enrollmentId);
+        if (!$enrollment) {
+            throw new RuntimeException(
+                'Mahasiswa tidak ditemukan pada kelas aktif.'
+            );
+        }
+
+        $hash = null;
+
+        if ($pin !== null) {
+            if (preg_match('/^\d{6}$/', $pin) !== 1) {
+                throw new RuntimeException(
+                    'PIN portal harus terdiri dari 6 digit angka.'
+                );
+            }
+
+            $hash = password_hash($pin, PASSWORD_DEFAULT);
+            if ($hash === false) {
+                throw new RuntimeException('PIN mahasiswa gagal diamankan.');
+            }
+        }
+
+        $stmt = $this->pdo->prepare(
+            'UPDATE students
+             SET portal_pin_hash = :portal_pin_hash
+             WHERE id = :student_id'
+        );
+        $stmt->execute([
+            'portal_pin_hash' => $hash,
+            'student_id' => (int) $enrollment['student_id'],
+        ]);
+    }
+
+
     public function deleteEnrollment(int $classId, int $enrollmentId): void
     {
         $stmt = $this->pdo->prepare(

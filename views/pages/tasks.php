@@ -10,6 +10,7 @@ $selectedTask = $selectedTaskId > 0
 $editTaskId = filter_input(INPUT_GET, 'edit_task', FILTER_VALIDATE_INT);
 $showTaskForm = isset($_GET['new_task']) || $editTaskId;
 $editTask = $editTaskId ? $repository->task($classId, (int) $editTaskId) : null;
+$practicumRubric = $analyticsService->practicumRubric();
 ?>
 <section class="page active">
     <div class="page-head">
@@ -162,6 +163,45 @@ $editTask = $editTaskId ? $repository->task($classId, (int) $editTaskId) : null;
         </div>
     <?php endif; ?>
 
+
+    <details class="card rubric-guide" style="margin-bottom:16px">
+        <summary>
+            <strong>Rubrik Praktikum</strong>
+            <span>Pedoman dosen menentukan satu nilai akhir 0–100</span>
+        </summary>
+
+        <div class="rubric-guide-body">
+            <div class="table-wrap">
+                <table class="rubric-table">
+                    <thead>
+                    <tr>
+                        <th>Aspek Penilaian</th>
+                        <th>Bobot</th>
+                        <th>Yang Dinilai</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($practicumRubric as $criterion): ?>
+                        <tr>
+                            <td><strong><?= e($criterion['name']) ?></strong></td>
+                            <td><?= (int) $criterion['weight'] ?>%</td>
+                            <td><?= e($criterion['description']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td><strong>100%</strong></td>
+                        <td>
+                            Dosen tetap menginput satu nilai akhir.
+                            Sistem membuat predikat dan narasi otomatis.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </details>
+
     <div class="task-layout">
         <div class="card task-list">
             <?php if ($tasks === []): ?>
@@ -225,9 +265,11 @@ $editTask = $editTaskId ? $repository->task($classId, (int) $editTaskId) : null;
                             <tr>
                                 <th>Mahasiswa</th>
                                 <th>NIM</th>
-                                <th>Link</th>
                                 <th>Status</th>
                                 <th>Nilai</th>
+                                <th>Predikat</th>
+                                <th>Hasil</th>
+                                <th>Detail</th>
                                 <th>Catatan</th>
                             </tr>
                             </thead>
@@ -265,11 +307,60 @@ $editTask = $editTaskId ? $repository->task($classId, (int) $editTaskId) : null;
 
                                     <td><?= e($student['nim']) ?></td>
 
+                                    <?php
+                                    $assessment = $record['score'] === null
+                                        ? null
+                                        : $analyticsService->practicumAssessment(
+                                            (float) $record['score'],
+                                            (float) $selectedTask['max_score']
+                                        );
+                                    ?>
+
+                                    <td>
+                                        <select
+                                            class="task-status-select"
+                                            name="records[<?= (int) $student['enrollment_id'] ?>][status]"
+                                        >
+                                            <option value="pending" <?= selected($record['status'], 'pending') ?>>Belum</option>
+                                            <option value="submitted" <?= selected($record['status'], 'submitted') ?>>Dikumpulkan</option>
+                                            <option value="graded" <?= selected($record['status'], 'graded') ?>>Dinilai</option>
+                                            <option value="late" <?= selected($record['status'], 'late') ?>>Terlambat</option>
+                                        </select>
+                                    </td>
+
+                                    <td>
+                                        <input
+                                            class="task-score-input"
+                                            data-rubric-score
+                                            data-max-score="<?= e($selectedTask['max_score']) ?>"
+                                            name="records[<?= (int) $student['enrollment_id'] ?>][score]"
+                                            type="number"
+                                            min="0"
+                                            max="<?= e($selectedTask['max_score']) ?>"
+                                            step="0.01"
+                                            value="<?= e($record['score'] ?? '') ?>"
+                                            placeholder="0-<?= e($selectedTask['max_score']) ?>"
+                                        >
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="rubric-badge <?= $assessment ? 'rubric-' . e($assessment['tone']) : 'rubric-empty' ?>"
+                                            data-rubric-predicate
+                                        >
+                                            <?= $assessment
+                                                ? e($assessment['icon'] . ' ' . $assessment['predicate'])
+                                                : '—' ?>
+                                        </span>
+                                    </td>
+
                                     <td>
                                         <?= resource_links($resourceSource, true) ?>
 
                                         <details style="margin-top:6px">
-                                            <summary class="small muted" style="cursor:pointer">Link khusus tugas</summary>
+                                            <summary class="small muted" style="cursor:pointer">
+                                                Link khusus tugas
+                                            </summary>
                                             <div class="task-record-links" style="margin-top:6px">
                                                 <input
                                                     name="records[<?= (int) $student['enrollment_id'] ?>][github_url]"
@@ -291,28 +382,49 @@ $editTask = $editTaskId ? $repository->task($classId, (int) $editTaskId) : null;
                                     </td>
 
                                     <td>
-                                        <select
-                                            class="task-status-select"
-                                            name="records[<?= (int) $student['enrollment_id'] ?>][status]"
-                                        >
-                                            <option value="pending" <?= selected($record['status'], 'pending') ?>>Belum</option>
-                                            <option value="submitted" <?= selected($record['status'], 'submitted') ?>>Dikumpulkan</option>
-                                            <option value="graded" <?= selected($record['status'], 'graded') ?>>Dinilai</option>
-                                            <option value="late" <?= selected($record['status'], 'late') ?>>Terlambat</option>
-                                        </select>
-                                    </td>
+                                        <?php if ($assessment): ?>
+                                            <details class="rubric-detail">
+                                                <summary class="btn small">
+                                                    Lihat Penilaian
+                                                </summary>
 
-                                    <td>
-                                        <input
-                                            class="task-score-input"
-                                            name="records[<?= (int) $student['enrollment_id'] ?>][score]"
-                                            type="number"
-                                            min="0"
-                                            max="<?= e($selectedTask['max_score']) ?>"
-                                            step="0.01"
-                                            value="<?= e($record['score'] ?? '') ?>"
-                                            placeholder="0-<?= e($selectedTask['max_score']) ?>"
-                                        >
+                                                <div class="rubric-detail-card">
+                                                    <div class="rubric-score-line">
+                                                        <strong>
+                                                            <?= e(number_format(
+                                                                (float) $assessment['normalized_score'],
+                                                                0
+                                                            )) ?>/100
+                                                        </strong>
+                                                        <span class="rubric-badge rubric-<?= e($assessment['tone']) ?>">
+                                                            <?= e($assessment['icon'] . ' ' . $assessment['predicate']) ?>
+                                                        </span>
+                                                    </div>
+
+                                                    <p data-rubric-description>
+                                                        <?= e($assessment['description']) ?>
+                                                    </p>
+
+                                                    <div class="rubric-detail-title">
+                                                        Rubrik acuan dosen
+                                                    </div>
+
+                                                    <?php foreach ($practicumRubric as $criterion): ?>
+                                                        <div class="rubric-criterion">
+                                                            <span><?= e($criterion['name']) ?></span>
+                                                            <strong><?= (int) $criterion['weight'] ?>%</strong>
+                                                        </div>
+                                                    <?php endforeach; ?>
+
+                                                    <p class="rubric-disclaimer">
+                                                        Nilai per aspek tidak dibuat otomatis dari nilai akhir.
+                                                        Rubrik ini menjadi dasar dosen saat menetapkan angka.
+                                                    </p>
+                                                </div>
+                                            </details>
+                                        <?php else: ?>
+                                            —
+                                        <?php endif; ?>
                                     </td>
 
                                     <td>
@@ -320,7 +432,7 @@ $editTask = $editTaskId ? $repository->task($classId, (int) $editTaskId) : null;
                                             class="task-note-input"
                                             name="records[<?= (int) $student['enrollment_id'] ?>][note]"
                                             value="<?= e($record['note'] ?? '') ?>"
-                                            placeholder="Catatan"
+                                            placeholder="Catatan opsional"
                                         >
                                     </td>
                                 </tr>
@@ -337,3 +449,72 @@ $editTask = $editTaskId ? $repository->task($classId, (int) $editTaskId) : null;
         </div>
     </div>
 </section>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const classifyScore = score => {
+        if (score >= 95) {
+            return ['excellent', '★ Unggul'];
+        }
+
+        if (score >= 85) {
+            return ['very-good', '● Sangat Baik'];
+        }
+
+        if (score >= 75) {
+            return ['good', '● Baik'];
+        }
+
+        if (score >= 65) {
+            return ['fair', '● Cukup'];
+        }
+
+        if (score >= 55) {
+            return ['needs-improvement', '● Perlu Perbaikan'];
+        }
+
+        return ['inadequate', '● Belum Memadai'];
+    };
+
+    document.querySelectorAll('[data-rubric-score]').forEach(input => {
+        input.addEventListener('input', () => {
+            const row = input.closest('tr');
+            const badge = row?.querySelector('[data-rubric-predicate]');
+
+            if (!badge) {
+                return;
+            }
+
+            const rawValue = input.value.trim();
+
+            badge.className = 'rubric-badge';
+
+            if (rawValue === '') {
+                badge.classList.add('rubric-empty');
+                badge.textContent = '—';
+                return;
+            }
+
+            const rawScore = Number(rawValue);
+            const maxScore = Number(input.dataset.maxScore || 100);
+
+            if (!Number.isFinite(rawScore) || !Number.isFinite(maxScore) || maxScore <= 0) {
+                badge.classList.add('rubric-empty');
+                badge.textContent = '—';
+                return;
+            }
+
+            const normalized = Math.max(
+                0,
+                Math.min(100, (rawScore / maxScore) * 100)
+            );
+
+            const [tone, predicate] = classifyScore(normalized);
+
+            badge.classList.add(`rubric-${tone}`);
+            badge.textContent = predicate;
+        });
+    });
+});
+</script>

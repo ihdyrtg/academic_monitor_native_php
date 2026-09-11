@@ -108,6 +108,126 @@ final class AnalyticsService
         return $counts;
     }
 
+
+    /**
+     * Rubrik acuan dosen untuk praktikum.
+     *
+     * Nilai aspek tidak dihitung otomatis dari nilai akhir karena
+     * pembagian tersebut memerlukan observasi dosen per aspek.
+     */
+    public function practicumRubric(): array
+    {
+        return [
+            [
+                'name' => 'Ketepatan Hasil',
+                'weight' => 35,
+                'description' =>
+                    'Program/hasil praktikum berjalan benar dan sesuai instruksi.',
+            ],
+            [
+                'name' => 'Kelengkapan',
+                'weight' => 25,
+                'description' =>
+                    'Seluruh komponen yang diminta tersedia.',
+            ],
+            [
+                'name' => 'Kemandirian',
+                'weight' => 20,
+                'description' =>
+                    'Kemampuan menyelesaikan tanpa banyak bantuan.',
+            ],
+            [
+                'name' => 'Ketepatan Waktu',
+                'weight' => 15,
+                'description' =>
+                    'Diselesaikan sesuai tenggat.',
+            ],
+            [
+                'name' => 'Inisiatif & Kreativitas',
+                'weight' => 5,
+                'description' =>
+                    'Ada pengembangan relevan di luar instruksi minimum.',
+            ],
+        ];
+    }
+
+    /**
+     * Mengubah satu nilai numerik menjadi predikat dan feedback otomatis.
+     *
+     * Nilai dinormalisasi ke skala 0-100 sehingga tetap konsisten saat
+     * komponen menggunakan nilai maksimum selain 100.
+     */
+    public function practicumAssessment(
+        ?float $score,
+        float $maxScore = 100.0
+    ): ?array {
+        if ($score === null) {
+            return null;
+        }
+
+        $safeMaxScore = $maxScore > 0 ? $maxScore : 100.0;
+        $normalized = max(
+            0.0,
+            min(
+                100.0,
+                ($score / $safeMaxScore) * 100.0
+            )
+        );
+
+        $assessment = match (true) {
+            $normalized >= 95 => [
+                'predicate' => 'Unggul',
+                'tone' => 'excellent',
+                'icon' => '★',
+                'description' =>
+                    'Seluruh komponen praktikum diselesaikan dengan benar, lengkap, mandiri, dan tepat waktu. Mahasiswa juga menunjukkan inisiatif melalui pengembangan yang relevan melampaui persyaratan dasar praktikum.',
+            ],
+            $normalized >= 85 => [
+                'predicate' => 'Sangat Baik',
+                'tone' => 'very-good',
+                'icon' => '●',
+                'description' =>
+                    'Praktikum diselesaikan dengan sangat baik dan seluruh komponen utama terpenuhi. Terdapat sedikit arahan dalam proses penyelesaian atau beberapa bagian minor yang masih dapat disempurnakan.',
+            ],
+            $normalized >= 75 => [
+                'predicate' => 'Baik',
+                'tone' => 'good',
+                'icon' => '●',
+                'description' =>
+                    'Praktikum berhasil diselesaikan sesuai tujuan utama. Beberapa bagian masih membutuhkan arahan atau terdapat komponen minor yang perlu diperbaiki.',
+            ],
+            $normalized >= 65 => [
+                'predicate' => 'Cukup',
+                'tone' => 'fair',
+                'icon' => '●',
+                'description' =>
+                    'Praktikum telah diselesaikan, tetapi masih memerlukan pendampingan dan terdapat beberapa komponen yang belum lengkap. Ketepatan waktu dan kemandirian perlu ditingkatkan.',
+            ],
+            $normalized >= 55 => [
+                'predicate' => 'Perlu Perbaikan',
+                'tone' => 'needs-improvement',
+                'icon' => '●',
+                'description' =>
+                    'Praktikum telah dikerjakan, tetapi belum memenuhi seluruh komponen yang ditetapkan. Penyelesaian membutuhkan pendampingan intensif dan dapat melewati batas waktu yang ditentukan.',
+            ],
+            default => [
+                'predicate' => 'Belum Memadai',
+                'tone' => 'inadequate',
+                'icon' => '●',
+                'description' =>
+                    'Sebagian besar komponen belum terpenuhi atau praktikum belum menunjukkan kompetensi minimum yang ditetapkan.',
+            ],
+        };
+
+        return [
+            ...$assessment,
+            'normalized_score' => round($normalized, 2),
+            'raw_score' => $score,
+            'max_score' => $safeMaxScore,
+        ];
+    }
+
+
     public function gradeLetter(float $score): string
     {
         return match (true) {

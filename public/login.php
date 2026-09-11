@@ -32,10 +32,20 @@ $flashes = consume_flashes();
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Login - Academic Monitor</title>
     <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+    <link
+    rel="icon"
+    type="image/png"
+    href="<?= e(app_url('assets/images/logo.png')) ?>"
+>
 </head>
 <body class="auth-body">
     <div class="card auth-card">
-        <div class="auth-logo">AM</div>
+        <div class="auth-logo">
+    <img
+        src="<?= e(app_url('assets/images/logo.png')) ?>"
+        alt="Logo Academic Monitor"
+    >
+</div>
         <h1>Academic Monitor</h1>
         <p>
             Dashboard monitoring akademik multi kelas, mata kuliah, mahasiswa,
@@ -67,12 +77,23 @@ $flashes = consume_flashes();
             </button>
         </form>
 
-        <div class="inline-help" style="margin-top:16px">
-            Akun awal setelah instalasi:
-            <strong>admin / Admin123!</strong> dan
-            <strong>dosen / Dosen123!</strong>.
-            Segera ganti password melalui menu Admin.
+
+        <div class="login-divider">
+            <span>atau</span>
         </div>
+
+        <a
+            class="btn student-portal-login-button"
+            href="<?= e(app_url('portal.php')) ?>"
+        >
+            🎓 Portal Mahasiswa
+        </a>
+
+        <p class="login-student-help">
+            Mahasiswa tidak perlu login.
+            Masukkan NIM untuk melihat progres akademik.
+        </p>
+
     </div>
 
     <script src="<?= e(app_url('assets/js/app.js')) ?>"></script>

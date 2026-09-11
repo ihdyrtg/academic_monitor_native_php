@@ -12,6 +12,12 @@
     <meta name="theme-color" content="#0f766e">
     <title><?= e($title ?? 'Dashboard Monitoring Akademik') ?></title>
     <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+    <link
+    rel="icon"
+    type="image/png"
+    href="<?= e(app_url('assets/images/logo.png')) ?>"
+>
+
 </head>
 <body>
 <div class="app">

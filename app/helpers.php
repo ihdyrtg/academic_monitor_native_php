@@ -8,19 +8,81 @@ function e(mixed $value): string
 
 function app_url(string $path = ''): string
 {
-    $base = rtrim((string) Config::get('APP_URL', ''), '/');
-    if ($base === '') {
-        $script = $_SERVER['SCRIPT_NAME'] ?? '';
-        $directory = str_replace('\\', '/', dirname($script));
-        $base = $directory === '/' ? '' : rtrim($directory, '/');
+    $isHttps =
+        (!empty($_SERVER['HTTPS'])
+            && $_SERVER['HTTPS'] !== 'off')
+        || (
+            isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+            && strtolower(
+                (string) $_SERVER['HTTP_X_FORWARDED_PROTO']
+            ) === 'https'
+        );
+
+    $scheme = $isHttps
+        ? 'https'
+        : 'http';
+
+    $host =
+        $_SERVER['HTTP_HOST']
+        ?? 'localhost';
+
+    $scriptName =
+        str_replace(
+            '\\',
+            '/',
+            (string) (
+                $_SERVER['SCRIPT_NAME']
+                ?? '/public/index.php'
+            )
+        );
+
+    $directory =
+        rtrim(
+            str_replace(
+                '\\',
+                '/',
+                dirname($scriptName)
+            ),
+            '/'
+        );
+
+    if ($directory === '.') {
+        $directory = '';
     }
 
-    return $base . '/' . ltrim($path, '/');
+    $base =
+        $scheme
+        . '://'
+        . $host
+        . $directory;
+
+    return
+        rtrim($base, '/')
+        . '/'
+        . ltrim($path, '/');
 }
+
 
 function redirect(string $path): never
 {
-    header('Location: ' . app_url($path));
+    /*
+     * URL absolut eksternal tidak diizinkan
+     * untuk redirect internal aplikasi.
+     */
+    if (
+        preg_match(
+            '#^https?://#i',
+            $path
+        ) === 1
+    ) {
+        $path = 'dashboard.php';
+    }
+
+    header(
+        'Location: '
+        . app_url($path)
+    );
+
     exit;
 }
 
@@ -177,3 +239,64 @@ function resource_links(array $student, bool $compact = false): string
 
     return '<div class="resource-links">' . implode('', $items) . '</div>';
 }
+
+/**
+ * Secret untuk menandatangani link Portal Mahasiswa publik.
+ *
+ * Simpan APP_PORTAL_SECRET hanya di .env dan jangan commit ke Git.
+ */
+function portal_secret(): string
+{
+    $secret = trim((string) Config::get('APP_PORTAL_SECRET', ''));
+
+    if (strlen($secret) < 32) {
+        throw new RuntimeException(
+            'APP_PORTAL_SECRET belum dikonfigurasi atau terlalu pendek. Gunakan minimal 32 karakter acak.'
+        );
+    }
+
+    return $secret;
+}
+
+/**
+ * Token stabil per enrollment. Mengganti APP_PORTAL_SECRET akan
+ * membatalkan seluruh link portal lama sekaligus.
+ */
+function portal_token(int $classId, int $enrollmentId): string
+{
+    return hash_hmac(
+        'sha256',
+        $classId . ':' . $enrollmentId,
+        portal_secret()
+    );
+}
+
+function portal_token_is_valid(
+    int $classId,
+    int $enrollmentId,
+    string $token
+): bool {
+    $token = strtolower(trim($token));
+
+    if (preg_match('/^[a-f0-9]{64}$/', $token) !== 1) {
+        return false;
+    }
+
+    return hash_equals(
+        portal_token($classId, $enrollmentId),
+        $token
+    );
+}
+
+function portal_public_url(int $classId, int $enrollmentId): string
+{
+    return app_url(
+        'portal.php?class_id='
+        . rawurlencode((string) $classId)
+        . '&enrollment_id='
+        . rawurlencode((string) $enrollmentId)
+        . '&token='
+        . rawurlencode(portal_token($classId, $enrollmentId))
+    );
+}
+

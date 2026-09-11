@@ -11,11 +11,13 @@ final class Database
             return self::$pdo;
         }
 
-        $host = Config::get('DB_HOST', '127.0.0.1');
-        $port = Config::get('DB_PORT', '3306');
-        $name = Config::get('DB_NAME', 'academic_monitor');
-        $user = Config::get('DB_USER', 'root');
-        $pass = Config::get('DB_PASS', '');
+        // --- DATA SUDAH DIPERBAIKI (Ditambahkan tanda titik koma di akhir setiap baris) ---
+        $host = 'sql204.infinityfree.com';
+        $port = '3306';
+        $name = 'if0_42832251_academic_monitor';
+        $user = 'if0_42832251';
+        $pass = 'BJTBiLpxcoUlrmX';
+        // -------------------------------------------------------------------
 
         $dsn = sprintf(
             'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
@@ -40,10 +42,12 @@ final class Database
 
     public static function serverConnection(): PDO
     {
-        $host = Config::get('DB_HOST', '127.0.0.1');
-        $port = Config::get('DB_PORT', '3306');
-        $user = Config::get('DB_USER', 'root');
-        $pass = Config::get('DB_PASS', '');
+        // --- SAMAKAN DENGAN DATA DI ATAS ---
+        $host = 'sql204.infinityfree.com';
+        $port = '3306';
+        $user = 'if0_42832251';
+        $pass = 'BJTBiLpxcoUlrmX';
+        // ------------------------------------
 
         return new PDO(
             sprintf('mysql:host=%s;port=%s;charset=utf8mb4', $host, $port),
