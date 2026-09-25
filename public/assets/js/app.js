@@ -2,9 +2,141 @@
   'use strict';
 
   const sidebar = document.getElementById('sidebar');
-  const mobileMenu = document.getElementById('mobileMenu');
-  if (mobileMenu && sidebar) {
-    mobileMenu.addEventListener('click', () => sidebar.classList.toggle('open'));
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+  const appShell = document.getElementById('appShell') || document.querySelector('.app');
+
+  if (sidebar && sidebarToggle && appShell) {
+    const desktopSidebarMedia = window.matchMedia('(min-width: 901px)');
+    const storageKey = 'academicMonitor.sidebarCollapsed';
+    const toggleIcon = sidebarToggle.querySelector('[aria-hidden="true"]');
+    const sidebarLinks = Array.from(sidebar.querySelectorAll('.nav a'));
+
+    const readCollapsedPreference = () => {
+      try {
+        return window.localStorage.getItem(storageKey) === '1';
+      } catch (error) {
+        return false;
+      }
+    };
+
+    const saveCollapsedPreference = (collapsed) => {
+      try {
+        window.localStorage.setItem(storageKey, collapsed ? '1' : '0');
+      } catch (error) {
+        // Sidebar tetap berfungsi bila penyimpanan lokal browser tidak tersedia.
+      }
+    };
+
+    const setSidebarLinkTooltips = (collapsed) => {
+      sidebarLinks.forEach((link) => {
+        const label = link.dataset.sidebarLabel || link.textContent.trim().replace(/\s+/g, ' ');
+        if (collapsed) {
+          link.setAttribute('title', label || 'Menu');
+        } else {
+          link.removeAttribute('title');
+        }
+      });
+    };
+
+    const syncSidebarAccessibility = () => {
+      const isDesktop = desktopSidebarMedia.matches;
+      const isCollapsed = isDesktop && appShell.classList.contains('sidebar-collapsed');
+      const isMobileOpen = !isDesktop && sidebar.classList.contains('open');
+
+      sidebarToggle.setAttribute(
+        'aria-expanded',
+        isDesktop ? String(!isCollapsed) : String(isMobileOpen)
+      );
+
+      sidebarToggle.setAttribute(
+        'aria-label',
+        isDesktop
+          ? (isCollapsed ? 'Buka sidebar' : 'Ciutkan sidebar')
+          : (isMobileOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi')
+      );
+
+      sidebarToggle.title = isDesktop
+        ? (isCollapsed ? 'Buka sidebar' : 'Ciutkan sidebar')
+        : (isMobileOpen ? 'Tutup menu' : 'Buka menu');
+
+      if (toggleIcon) {
+        toggleIcon.textContent = isDesktop
+          ? (isCollapsed ? '☰' : '‹')
+          : (isMobileOpen ? '×' : '☰');
+      }
+
+      setSidebarLinkTooltips(isCollapsed);
+    };
+
+    const closeMobileSidebar = () => {
+      sidebar.classList.remove('open');
+      sidebarBackdrop?.classList.remove('show');
+      document.body.classList.remove('sidebar-mobile-open');
+      syncSidebarAccessibility();
+    };
+
+    const openMobileSidebar = () => {
+      sidebar.classList.add('open');
+      sidebarBackdrop?.classList.add('show');
+      document.body.classList.add('sidebar-mobile-open');
+      syncSidebarAccessibility();
+    };
+
+    const applyResponsiveSidebarState = () => {
+      if (desktopSidebarMedia.matches) {
+        sidebar.classList.remove('open');
+        sidebarBackdrop?.classList.remove('show');
+        document.body.classList.remove('sidebar-mobile-open');
+        appShell.classList.toggle('sidebar-collapsed', readCollapsedPreference());
+      } else {
+        appShell.classList.remove('sidebar-collapsed');
+        closeMobileSidebar();
+      }
+
+      syncSidebarAccessibility();
+    };
+
+    sidebarToggle.addEventListener('click', () => {
+      if (desktopSidebarMedia.matches) {
+        const collapsed = !appShell.classList.contains('sidebar-collapsed');
+        appShell.classList.toggle('sidebar-collapsed', collapsed);
+        saveCollapsedPreference(collapsed);
+        syncSidebarAccessibility();
+        return;
+      }
+
+      if (sidebar.classList.contains('open')) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+    });
+
+    sidebarBackdrop?.addEventListener('click', closeMobileSidebar);
+
+    sidebarLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        if (!desktopSidebarMedia.matches) {
+          closeMobileSidebar();
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && sidebar.classList.contains('open')) {
+        closeMobileSidebar();
+        sidebarToggle.focus();
+      }
+    });
+
+    if (typeof desktopSidebarMedia.addEventListener === 'function') {
+      desktopSidebarMedia.addEventListener('change', applyResponsiveSidebarState);
+    } else {
+      desktopSidebarMedia.addListener(applyResponsiveSidebarState);
+    }
+
+    applyResponsiveSidebarState();
   }
 
   document.querySelectorAll('[data-confirm]').forEach((element) => {
@@ -48,23 +180,34 @@
   }
 
   const attendanceSearch = document.getElementById('attendanceSearch');
-  if (attendanceSearch) {
-    attendanceSearch.addEventListener('input', () => {
-      const query = attendanceSearch.value.trim().toLowerCase();
-      document.querySelectorAll('[data-attendance-card]').forEach((card) => {
-        card.hidden = query !== '' && !card.dataset.search.includes(query);
-      });
-    });
-  }
-
-
   const attendanceForm = document.getElementById('attendanceForm');
   if (attendanceForm) {
+    const attendanceFilterButtons = Array.from(
+      document.querySelectorAll('[data-attendance-filter]')
+    );
+    let activeAttendanceFilter = 'all';
+
+    const applyAttendanceFilters = () => {
+      const query = attendanceSearch?.value.trim().toLowerCase() || '';
+
+      attendanceForm.querySelectorAll('[data-attendance-card]').forEach((card) => {
+        const input = card.querySelector('.attendance-status-input');
+        const currentStatus = input?.value || 'blank';
+        const matchesSearch = query === '' || card.dataset.search.includes(query);
+        const matchesStatus = activeAttendanceFilter === 'all'
+          || currentStatus === activeAttendanceFilter;
+
+        card.hidden = !(matchesSearch && matchesStatus);
+      });
+    };
+
     const updateAttendanceSummary = () => {
-      const counts = {H: 0, I: 0, S: 0, A: 0, blank: 0};
+      const counts = {all: 0, H: 0, I: 0, S: 0, A: 0, blank: 0};
 
       attendanceForm.querySelectorAll('.attendance-status-input').forEach((input) => {
         const value = input.value;
+        counts.all += 1;
+
         if (Object.prototype.hasOwnProperty.call(counts, value)) {
           counts[value] += 1;
         } else {
@@ -79,6 +222,22 @@
         }
       });
     };
+
+    attendanceSearch?.addEventListener('input', applyAttendanceFilters);
+
+    attendanceFilterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeAttendanceFilter = button.dataset.attendanceFilter || 'all';
+
+        attendanceFilterButtons.forEach((item) => {
+          const isActive = item === button;
+          item.classList.toggle('active', isActive);
+          item.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        applyAttendanceFilters();
+      });
+    });
 
     attendanceForm.addEventListener('click', (event) => {
       const button = event.target.closest('[data-attendance-status]');
@@ -105,9 +264,11 @@
 
       card.classList.add('attendance-changed');
       updateAttendanceSummary();
+      applyAttendanceFilters();
     });
 
     updateAttendanceSummary();
+    applyAttendanceFilters();
   }
 
 

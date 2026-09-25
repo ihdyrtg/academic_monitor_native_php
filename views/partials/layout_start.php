@@ -20,12 +20,28 @@
 
 </head>
 <body>
-<div class="app">
+<div class="app" id="appShell">
     <?php require APP_ROOT . '/views/partials/sidebar.php'; ?>
+    <button
+        class="sidebar-backdrop"
+        id="sidebarBackdrop"
+        type="button"
+        tabindex="-1"
+        aria-label="Tutup sidebar"
+    ></button>
 
     <main class="main">
         <header class="topbar">
-            <button class="btn mobile-menu" id="mobileMenu" type="button">☰</button>
+            <button
+                class="btn sidebar-toggle"
+                id="sidebarToggle"
+                type="button"
+                aria-controls="sidebar"
+                aria-expanded="true"
+                title="Ciutkan atau buka sidebar"
+            >
+                <span aria-hidden="true">☰</span>
+            </button>
 
             <div class="context">
                 <strong><?= e($classContext['name'] ?? 'Kelas') ?></strong>

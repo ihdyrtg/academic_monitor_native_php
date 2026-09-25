@@ -1,13 +1,13 @@
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
     <div class="brand">
         <div class="brand-mark">
-    <img
-        src="<?= e(app_url('assets/images/logo.png')) ?>"
-        alt="Logo Academic Monitor"
-    >
-</div>
+            <img
+                src="<?= e(app_url('assets/images/logo.png')) ?>"
+                alt="Logo Academic Monitor"
+            >
+        </div>
 
-        <div>
+        <div class="brand-copy">
             <h1><?= e($classContext['name'] ?? 'Academic Monitor') ?></h1>
             <p><?= e($classContext['course_name'] ?? 'Multi kelas • multi mata kuliah') ?></p>
         </div>
@@ -15,8 +15,14 @@
 
     <nav class="nav">
         <?php if (($user['role'] ?? '') === 'mahasiswa'): ?>
-            <a class="<?= $page === 'portal' ? 'active' : '' ?>" href="<?= e(app_url('dashboard.php?page=portal')) ?>">
-                <span class="ico">◉</span> Dashboard Saya
+            <a
+                class="<?= $page === 'portal' ? 'active' : '' ?>"
+                href="<?= e(app_url('dashboard.php?page=portal')) ?>"
+                aria-label="Dashboard Saya"
+                data-sidebar-label="Dashboard Saya"
+            >
+                <span class="ico" aria-hidden="true">◉</span>
+                <span class="nav-label">Dashboard Saya</span>
             </a>
         <?php else: ?>
             <?php
@@ -39,14 +45,22 @@
                 <a
                     class="<?= $page === $menuPage ? 'active' : '' ?>"
                     href="<?= e(app_url('dashboard.php?page=' . $menuPage . '&class_id=' . (int) ($classContext['id'] ?? 0))) ?>"
+                    aria-label="<?= e($label) ?>"
+                    data-sidebar-label="<?= e($label) ?>"
                 >
-                    <span class="ico"><?= e($icon) ?></span> <?= e($label) ?>
+                    <span class="ico" aria-hidden="true"><?= e($icon) ?></span>
+                    <span class="nav-label"><?= e($label) ?></span>
                 </a>
             <?php endforeach; ?>
 
             <?php if (($user['role'] ?? '') === 'admin'): ?>
-                <a href="<?= e(app_url('admin.php')) ?>">
-                    <span class="ico">◆</span> Administrasi Sistem
+                <a
+                    href="<?= e(app_url('admin.php')) ?>"
+                    aria-label="Administrasi Sistem"
+                    data-sidebar-label="Administrasi Sistem"
+                >
+                    <span class="ico" aria-hidden="true">◆</span>
+                    <span class="nav-label">Administrasi Sistem</span>
                 </a>
             <?php endif; ?>
         <?php endif; ?>

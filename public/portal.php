@@ -208,12 +208,7 @@ $institution = $settings['institution'] ?? 'Academic Monitor';
                 Ganti NIM
             </a>
         <?php else: ?>
-            <a
-                class="btn"
-                href="<?= e(app_url('login.php')) ?>"
-            >
-                Login Dosen / Admin
-            </a>
+
         <?php endif; ?>
     </div>
 </header>
@@ -462,51 +457,55 @@ $gradeProgress = max(
             <strong>Presensi Saya</strong>
         </div>
 
-        <div class="table-wrap">
-            <table>
+        <div class="table-wrap portal-attendance-scroll">
+            <table class="portal-attendance-table" data-no-sort>
                 <thead>
                 <tr>
-                    <th>Pertemuan</th>
-                    <th>Status</th>
+                    <?php for (
+                        $meeting = 1;
+                        $meeting <= (int) $classContext['meetings'];
+                        $meeting++
+                    ): ?>
+                        <th>P<?= $meeting ?></th>
+                    <?php endfor; ?>
                 </tr>
                 </thead>
 
                 <tbody>
-                <?php for (
-                    $meeting = 1;
-                    $meeting <= (int) $classContext['meetings'];
-                    $meeting++
-                ): ?>
-                    <?php
-                    $status = $analytics['attendance_map']
-                        [$enrollmentId][$meeting] ?? '';
+                <tr>
+                    <?php for (
+                        $meeting = 1;
+                        $meeting <= (int) $classContext['meetings'];
+                        $meeting++
+                    ): ?>
+                        <?php
+                        $status = $analytics['attendance_map']
+                            [$enrollmentId][$meeting] ?? '';
 
-                    $label = match ($status) {
-                        'H' => 'Hadir',
-                        'I' => 'Izin',
-                        'S' => 'Sakit',
-                        'A' => 'Alpa',
-                        default => 'Belum',
-                    };
+                        $label = match ($status) {
+                            'H' => 'Hadir',
+                            'I' => 'Izin',
+                            'S' => 'Sakit',
+                            'A' => 'Alpa',
+                            default => 'Belum',
+                        };
 
-                    $tone = match ($status) {
-                        'H' => 'ok',
-                        'I' => 'info',
-                        'S' => 'warn',
-                        'A' => 'danger',
-                        default => 'neutral',
-                    };
-                    ?>
+                        $tone = match ($status) {
+                            'H' => 'ok',
+                            'I' => 'info',
+                            'S' => 'warn',
+                            'A' => 'danger',
+                            default => 'neutral',
+                        };
+                        ?>
 
-                    <tr>
-                        <td>Pertemuan <?= $meeting ?></td>
                         <td>
                             <span class="badge <?= e($tone) ?>">
                                 <?= e($label) ?>
                             </span>
                         </td>
-                    </tr>
-                <?php endfor; ?>
+                    <?php endfor; ?>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -518,24 +517,56 @@ $gradeProgress = max(
         </div>
 
         <div class="table-wrap">
-            <table class="student-rubric-table">
-                <thead>
-                <tr>
-                    <th>Komponen</th>
-                    <th>Bobot</th>
-                    <th>Status</th>
-                    <th>Nilai</th>
-                    <th>Predikat</th>
-                    <th>Hasil</th>
-                    <th>Detail</th>
-                </tr>
-                </thead>
 
-                <tbody>
+        <table class="student-rubric-table public-student-rubric-table">
+
+            <thead>
+                <tr>
+                    <th>KOMPONEN</th>
+                    <th>BOBOT</th>
+                    <th>LINK</th>
+                    <th>STATUS</th>
+                    <th>NILAI</th>
+                    <th>PREDIKAT</th>
+                    <th>CATATAN DOSEN</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+            <?php if ($tasks === []): ?>
+
+                <tr>
+                    <td
+                        colspan="7"
+                        style="
+                            text-align:center;
+                            padding:24px;
+                            color:#64748b;
+                        "
+                    >
+                        Belum ada komponen penilaian.
+                    </td>
+                </tr>
+
+            <?php else: ?>
+
+
                 <?php foreach ($tasks as $task): ?>
+
                     <?php
-                    $record = $analytics['task_records_map']
-                        [(int) $task['id']][$enrollmentId]
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | RECORD TUGAS MAHASISWA
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $record =
+                        $analytics['task_records_map']
+                        [(int) $task['id']]
+                        [$enrollmentId]
                         ?? [
                             'status' => 'pending',
                             'score' => null,
@@ -545,142 +576,313 @@ $gradeProgress = max(
                             'drive_url' => null,
                         ];
 
-                    $assessment = $record['score'] === null
-                        ? null
-                        : $analyticsService->practicumAssessment(
-                            (float) $record['score'],
-                            (float) $task['max_score']
-                        );
 
-                    $statusLabel = match ($record['status'] ?? 'pending') {
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STATUS
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $recordStatus = strtolower(
+                        trim(
+                            (string) (
+                                $record['status']
+                                ?? 'pending'
+                            )
+                        )
+                    );
+
+
+                    $statusLabel = match ($recordStatus) {
+
                         'submitted' => 'Dikumpulkan',
+
                         'graded' => 'Dinilai',
+
                         'late' => 'Terlambat',
+
                         default => 'Belum',
                     };
 
-                    $statusTone = match ($record['status'] ?? 'pending') {
+
+                    $statusTone = match ($recordStatus) {
+
                         'submitted' => 'info',
+
                         'graded' => 'ok',
+
                         'late' => 'danger',
+
                         default => 'neutral',
                     };
 
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | NILAI
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $score =
+                        $record['score']
+                        ?? null;
+
+
+                    $maxScore =
+                        isset($task['max_score'])
+                        && (float) $task['max_score'] > 0
+
+                        ? (float) $task['max_score']
+
+                        : 100;
+
+
+                    $assessment = $analyticsService->practicumAssessment(
+                        $score === null || $score === ''
+                            ? null
+                            : (float) $score,
+                        $maxScore
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | CATATAN DOSEN
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $teacherNote =
+                        trim(
+                            (string) (
+                                $record['note']
+                                ?? ''
+                            )
+                        );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | LINK MAHASISWA
+                    |--------------------------------------------------------------------------
+                    */
+
                     $resourceData = [
+
                         'github_url' =>
-                            $record['github_url']
-                            ?: $student['github_url'],
+                            !empty($record['github_url'])
+
+                            ? $record['github_url']
+
+                            : (
+                                $student['github_url']
+                                ?? null
+                            ),
+
+
                         'colab_url' =>
-                            $record['colab_url']
-                            ?: $student['colab_url'],
+                            !empty($record['colab_url'])
+
+                            ? $record['colab_url']
+
+                            : (
+                                $student['colab_url']
+                                ?? null
+                            ),
+
+
                         'drive_url' =>
-                            $record['drive_url']
-                            ?: $student['drive_url'],
+                            !empty($record['drive_url'])
+
+                            ? $record['drive_url']
+
+                            : (
+                                $student['drive_url']
+                                ?? null
+                            ),
+
                     ];
+
                     ?>
 
+
                     <tr>
-                        <td><strong><?= e($task['name']) ?></strong></td>
+
+                        <!-- =========================
+                             KOMPONEN
+                             ========================= -->
 
                         <td>
-                            <?= e(number_format(
-                                (float) $task['weight'],
-                                2
-                            )) ?>%
+
+                            <strong>
+                                <?= e(
+                                    (string) $task['name']
+                                ) ?>
+                            </strong>
+
                         </td>
 
+
+                        <!-- =========================
+                             BOBOT
+                             ========================= -->
+
                         <td>
-                            <span class="badge <?= e($statusTone) ?>">
+
+                            <?= e(
+                                number_format(
+                                    (float) (
+                                        $task['weight']
+                                        ?? 0
+                                    ),
+                                    2
+                                )
+                            ) ?>%
+
+                        </td>
+
+
+                        <!-- =========================
+                             LINK
+                             ========================= -->
+
+                        <td>
+
+                            <?= resource_links(
+                                $resourceData,
+                                true
+                            ) ?>
+
+                        </td>
+
+
+                        <!-- =========================
+                             STATUS
+                             ========================= -->
+
+                        <td>
+
+                            <span
+                                class="badge <?= e($statusTone) ?>"
+                            >
                                 <?= e($statusLabel) ?>
                             </span>
+
                         </td>
 
+
+                        <!-- =========================
+                             NILAI
+                             ========================= -->
+
                         <td>
-                            <?php if (!$assessment): ?>
-                                —
+
+                            <?php
+                            if (
+                                $score === null
+                                || $score === ''
+                            ):
+                            ?>
+
+                                <span
+                                    style="color:#94a3b8"
+                                >
+                                    —
+                                </span>
+
                             <?php else: ?>
+
                                 <strong>
-                                    <?= e(number_format(
-                                        (float) $assessment['normalized_score'],
-                                        0
-                                    )) ?>/100
+
+                                    <?= e(
+                                        number_format(
+                                            (float) $score,
+                                            2
+                                        )
+                                    ) ?>
+
+                                    /
+
+                                    <?= e(
+                                        number_format(
+                                            $maxScore,
+                                            2
+                                        )
+                                    ) ?>
+
                                 </strong>
+
                             <?php endif; ?>
+
                         </td>
 
+
+                        <!-- =========================
+                             PREDIKAT
+                             ========================= -->
+
                         <td>
-                            <?php if (!$assessment): ?>
-                                —
+
+                            <?php if ($assessment === null): ?>
+
+                                <span class="rubric-badge rubric-empty">
+                                    —
+                                </span>
+
                             <?php else: ?>
-                                <span class="rubric-badge rubric-<?= e($assessment['tone']) ?>">
+
+                                <span
+                                    class="rubric-badge rubric-<?= e($assessment['tone']) ?>"
+                                >
                                     <?= e($assessment['icon'] . ' ' . $assessment['predicate']) ?>
                                 </span>
+
                             <?php endif; ?>
+
                         </td>
 
-                        <td>
-                            <?= resource_links($resourceData, true) ?>
-                        </td>
 
-                        <td>
-                            <?php if (!$assessment): ?>
-                                —
+                        <!-- =========================
+                             CATATAN DOSEN
+                             ========================= -->
+
+                        <td
+                            class="student-teacher-note"
+                        >
+
+                            <?php
+                            if ($teacherNote !== ''):
+                            ?>
+
+                                <?= nl2br(
+                                    e($teacherNote)
+                                ) ?>
+
                             <?php else: ?>
-                                <details class="rubric-detail">
-                                    <summary class="btn small">
-                                        Lihat Penilaian
-                                    </summary>
 
-                                    <div class="rubric-detail-card">
-                                        <div class="rubric-score-line">
-                                            <strong>
-                                                <?= e(number_format(
-                                                    (float) $assessment['normalized_score'],
-                                                    0
-                                                )) ?>/100
-                                            </strong>
+                                <span
+                                    style="color:#94a3b8"
+                                >
+                                    —
+                                </span>
 
-                                            <span class="rubric-badge rubric-<?= e($assessment['tone']) ?>">
-                                                <?= e($assessment['predicate']) ?>
-                                            </span>
-                                        </div>
-
-                                        <p>
-                                            <?= e($assessment['description']) ?>
-                                        </p>
-
-                                        <?php if (trim((string) ($record['note'] ?? '')) !== ''): ?>
-                                            <div class="rubric-note">
-                                                <strong>Catatan dosen:</strong>
-                                                <?= e($record['note']) ?>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <div class="rubric-detail-title">
-                                            Rubrik Praktikum
-                                        </div>
-
-                                        <?php foreach ($analyticsService->practicumRubric() as $criterion): ?>
-                                            <div class="rubric-criterion">
-                                                <span><?= e($criterion['name']) ?></span>
-                                                <strong><?= (int) $criterion['weight'] ?>%</strong>
-                                            </div>
-                                        <?php endforeach; ?>
-
-                                        <p class="rubric-disclaimer">
-                                            Nilai per aspek tidak ditampilkan sebagai skor
-                                            karena dosen hanya memasukkan satu nilai akhir.
-                                        </p>
-                                    </div>
-                                </details>
                             <?php endif; ?>
+
                         </td>
+
                     </tr>
+
                 <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+
+
+            <?php endif; ?>
+
+            </tbody>
+
+        </table>
+
     </div>
+
+</div>
 </div>
 
 <?php endif; ?>

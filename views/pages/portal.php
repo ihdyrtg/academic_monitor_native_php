@@ -196,10 +196,15 @@ if (($user['role'] ?? '') === 'mahasiswa') {
             </div>
 
             <div class="card table-card" style="margin-top:16px">
-                <div class="table-tools"><strong>Tugas & Nilai Saya</strong></div>
+                <div class="table-tools">
+                    <strong>Tugas & Nilai Saya</strong>
+                    <span class="small muted">Predikat dan detail mengikuti rubrik penilaian dosen.</span>
+                </div>
+
+                <?php $practicumRubric = $analyticsService->practicumRubric(); ?>
 
                 <div class="table-wrap">
-                    <table>
+                    <table class="student-rubric-table admin-student-rubric-table">
                         <thead>
                         <tr>
                             <th>Komponen</th>
@@ -207,40 +212,176 @@ if (($user['role'] ?? '') === 'mahasiswa') {
                             <th>Link</th>
                             <th>Status</th>
                             <th>Nilai</th>
+                            <th>Predikat</th>
+                            <th>Detail</th>
                             <th>Catatan Dosen</th>
                         </tr>
                         </thead>
 
                         <tbody>
-                        <?php foreach ($tasks as $task): ?>
-                            <?php
-                            $record = $analytics['task_records_map'][(int) $task['id']][$enrollmentId] ?? [
-                                'status' => 'pending',
-                                'score' => null,
-                                'note' => '',
-                                'github_url' => null,
-                                'colab_url' => null,
-                                'drive_url' => null,
-                            ];
-                            $resources = [
-                                'github_url' => $record['github_url'] ?: $portalStudent['github_url'],
-                                'colab_url' => $record['colab_url'] ?: $portalStudent['colab_url'],
-                                'drive_url' => $record['drive_url'] ?: $portalStudent['drive_url'],
-                            ];
-                            ?>
+                        <?php if ($tasks === []): ?>
                             <tr>
-                                <td><?= e($task['name']) ?></td>
-                                <td><?= e(number_format((float) $task['weight'], 2)) ?>%</td>
-                                <td><?= resource_links($resources, true) ?></td>
-                                <td><?= e($record['status'] ?? 'pending') ?></td>
-                                <td>
-                                    <?= $record['score'] === null
-                                        ? '—'
-                                        : e($record['score']) . '/' . e($task['max_score']) ?>
-                                </td>
-                                <td><?= e($record['note'] ?: '—') ?></td>
+                                <td colspan="8" class="empty-state">Belum ada komponen penilaian.</td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php foreach ($tasks as $task): ?>
+                                <?php
+                                $record = $analytics['task_records_map'][(int) $task['id']][$enrollmentId] ?? [
+                                    'status' => 'pending',
+                                    'score' => null,
+                                    'note' => '',
+                                    'github_url' => null,
+                                    'colab_url' => null,
+                                    'drive_url' => null,
+                                ];
+                                $resources = [
+                                    'github_url' => $record['github_url'] ?: $portalStudent['github_url'],
+                                    'colab_url' => $record['colab_url'] ?: $portalStudent['colab_url'],
+                                    'drive_url' => $record['drive_url'] ?: $portalStudent['drive_url'],
+                                ];
+
+                                $recordStatus = strtolower(trim((string) ($record['status'] ?? 'pending')));
+                                $statusLabel = match ($recordStatus) {
+                                    'submitted' => 'Dikumpulkan',
+                                    'graded' => 'Dinilai',
+                                    'late' => 'Terlambat',
+                                    default => 'Belum',
+                                };
+                                $statusTone = match ($recordStatus) {
+                                    'submitted' => 'info',
+                                    'graded' => 'ok',
+                                    'late' => 'danger',
+                                    default => 'neutral',
+                                };
+
+                                $score = $record['score'] ?? null;
+                                $maxScore = isset($task['max_score']) && (float) $task['max_score'] > 0
+                                    ? (float) $task['max_score']
+                                    : 100.0;
+                                $assessment = $score === null || $score === ''
+                                    ? null
+                                    : $analyticsService->practicumAssessment((float) $score, $maxScore);
+                                $teacherNote = trim((string) ($record['note'] ?? ''));
+                                ?>
+                                <tr>
+                                    <td><strong><?= e($task['name']) ?></strong></td>
+                                    <td><?= e(number_format((float) $task['weight'], 2)) ?>%</td>
+                                    <td><?= resource_links($resources, true) ?></td>
+                                    <td>
+                                        <span class="badge <?= e($statusTone) ?>"><?= e($statusLabel) ?></span>
+                                    </td>
+                                    <td>
+                                        <?= !$assessment
+                                            ? '—'
+                                            : e(number_format((float) $score, 2)) . '/' . e(number_format($maxScore, 2)) ?>
+                                    </td>
+                                    <td>
+                                        <?php if (!$assessment): ?>
+                                            <span class="rubric-badge rubric-empty">—</span>
+                                        <?php else: ?>
+                                            <span class="rubric-badge rubric-<?= e($assessment['tone']) ?>">
+                                                <?= e($assessment['icon'] . ' ' . $assessment['predicate']) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if (!$assessment): ?>
+                                            —
+                                        <?php else: ?>
+                                            <?php
+                                            $assessmentPopoverId = 'assessment-popover-'
+                                                . (int) $task['id']
+                                                . '-'
+                                                . $enrollmentId;
+                                            ?>
+
+                                            <button
+                                                type="button"
+                                                class="btn small assessment-trigger"
+                                                popovertarget="<?= e($assessmentPopoverId) ?>"
+                                                aria-haspopup="dialog"
+                                            >
+                                                Lihat Penilaian
+                                            </button>
+
+                                            <div
+                                                id="<?= e($assessmentPopoverId) ?>"
+                                                class="assessment-popover"
+                                                popover="auto"
+                                                role="dialog"
+                                                aria-label="Detail penilaian <?= e($task['name']) ?>"
+                                            >
+                                                <div class="assessment-popover-inner">
+                                                    <div class="assessment-popover-head">
+                                                        <div>
+                                                            <span class="assessment-popover-kicker">Detail Penilaian</span>
+                                                            <h3><?= e($task['name']) ?></h3>
+                                                        </div>
+
+                                                        <button
+                                                            type="button"
+                                                            class="assessment-popover-close"
+                                                            popovertarget="<?= e($assessmentPopoverId) ?>"
+                                                            popovertargetaction="hide"
+                                                            aria-label="Tutup detail penilaian"
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="assessment-score-panel">
+                                                        <div>
+                                                            <span>Nilai</span>
+                                                            <strong>
+                                                                <?= e(number_format((float) $assessment['normalized_score'], 0)) ?>/100
+                                                            </strong>
+                                                        </div>
+                                                        <span class="rubric-badge rubric-<?= e($assessment['tone']) ?>">
+                                                            <?= e($assessment['icon'] . ' ' . $assessment['predicate']) ?>
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="assessment-section">
+                                                        <div class="assessment-section-title">Umpan Balik</div>
+                                                        <p class="assessment-description">
+                                                            <?= e($assessment['description']) ?>
+                                                        </p>
+                                                    </div>
+
+                                                    <?php if ($teacherNote !== ''): ?>
+                                                        <div class="assessment-section">
+                                                            <div class="assessment-section-title">Catatan Dosen</div>
+                                                            <div class="rubric-note assessment-teacher-note">
+                                                                <?= nl2br(e($teacherNote)) ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <div class="assessment-section">
+                                                        <div class="assessment-section-title">Rubrik Praktikum</div>
+                                                        <div class="assessment-rubric-list">
+                                                            <?php foreach ($practicumRubric as $criterion): ?>
+                                                                <div class="rubric-criterion">
+                                                                    <span><?= e($criterion['name']) ?></span>
+                                                                    <strong><?= (int) $criterion['weight'] ?>%</strong>
+                                                                </div>
+                                                            <?php endforeach; ?>
+                                                        </div>
+                                                    </div>
+
+                                                    <p class="rubric-disclaimer assessment-disclaimer">
+                                                        Rubrik menjadi acuan dosen saat menetapkan nilai akhir.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="student-teacher-note">
+                                        <?= $teacherNote !== '' ? nl2br(e($teacherNote)) : '—' ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

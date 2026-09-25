@@ -60,15 +60,54 @@ $attendanceCounts = $analyticsService->attendanceCounts(
             </div>
         </div>
 
-        <div
-            id="attendanceSummary"
-            style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px"
-        >
-            <span class="badge ok">Hadir <strong data-attendance-count="H"><?= (int) $attendanceCounts['H'] ?></strong></span>
-            <span class="badge info">Izin <strong data-attendance-count="I"><?= (int) $attendanceCounts['I'] ?></strong></span>
-            <span class="badge warn">Sakit <strong data-attendance-count="S"><?= (int) $attendanceCounts['S'] ?></strong></span>
-            <span class="badge danger">Alpa <strong data-attendance-count="A"><?= (int) $attendanceCounts['A'] ?></strong></span>
-            <span class="badge neutral">Belum <strong data-attendance-count="blank"><?= (int) $attendanceCounts['blank'] ?></strong></span>
+        <div id="attendanceSummary" class="attendance-filter-bar">
+            <button
+                type="button"
+                class="attendance-filter-button all active"
+                data-attendance-filter="all"
+                aria-pressed="true"
+                title="Tampilkan seluruh mahasiswa"
+            >Semua <strong data-attendance-count="all"><?= count($students) ?></strong></button>
+
+            <button
+                type="button"
+                class="attendance-filter-button ok"
+                data-attendance-filter="H"
+                aria-pressed="false"
+                title="Tampilkan mahasiswa berstatus Hadir"
+            >Hadir <strong data-attendance-count="H"><?= (int) $attendanceCounts['H'] ?></strong></button>
+
+            <button
+                type="button"
+                class="attendance-filter-button info"
+                data-attendance-filter="I"
+                aria-pressed="false"
+                title="Tampilkan mahasiswa berstatus Izin"
+            >Izin <strong data-attendance-count="I"><?= (int) $attendanceCounts['I'] ?></strong></button>
+
+            <button
+                type="button"
+                class="attendance-filter-button warn"
+                data-attendance-filter="S"
+                aria-pressed="false"
+                title="Tampilkan mahasiswa berstatus Sakit"
+            >Sakit <strong data-attendance-count="S"><?= (int) $attendanceCounts['S'] ?></strong></button>
+
+            <button
+                type="button"
+                class="attendance-filter-button danger"
+                data-attendance-filter="A"
+                aria-pressed="false"
+                title="Tampilkan mahasiswa berstatus Alpa"
+            >Alpa <strong data-attendance-count="A"><?= (int) $attendanceCounts['A'] ?></strong></button>
+
+            <button
+                type="button"
+                class="attendance-filter-button neutral"
+                data-attendance-filter="blank"
+                aria-pressed="false"
+                title="Tampilkan mahasiswa yang belum diisi presensinya"
+            >Belum <strong data-attendance-count="blank"><?= (int) $attendanceCounts['blank'] ?></strong></button>
         </div>
     </div>
 

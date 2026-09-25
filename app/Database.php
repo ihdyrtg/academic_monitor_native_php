@@ -12,11 +12,11 @@ final class Database
         }
 
         // --- DATA SUDAH DIPERBAIKI (Ditambahkan tanda titik koma di akhir setiap baris) ---
-        $host = 'sql204.infinityfree.com';
+        $host = '127.0.0.1';
         $port = '3306';
-        $name = 'if0_42832251_academic_monitor';
-        $user = 'if0_42832251';
-        $pass = 'BJTBiLpxcoUlrmX';
+        $name = 'academic_monitor';
+        $user = 'root';
+        $pass = '';
         // -------------------------------------------------------------------
 
         $dsn = sprintf(

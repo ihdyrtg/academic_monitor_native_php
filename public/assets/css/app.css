@@ -411,10 +411,182 @@ table thead th[data-sortable-column]:focus-visible {
 .task-grade-table th:nth-child(7){min-width:130px}
 .task-grade-table th:nth-child(8){min-width:180px}
 
+/* =========================================================
+   TABEL TUGAS & NILAI
+   Admin simulation = 8 kolom, portal publik = 7 kolom.
+   Keduanya dipisahkan agar Catatan Dosen tidak menyempitkan
+   kolom lain atau membuat satu baris menjadi sangat tinggi.
+   ========================================================= */
+
+.student-rubric-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.student-rubric-table th,
+.student-rubric-table td{
+    box-sizing:border-box;
+    padding:11px 12px;
+    vertical-align:middle;
+    line-height:1.4;
+}
+
+/* ---------- Admin > Portal Mahasiswa: 8 kolom ---------- */
+.admin-student-rubric-table{
+    width:100%;
+    min-width:860px !important;
+    table-layout:fixed;
+}
+
+.admin-student-rubric-table th:nth-child(1),
+.admin-student-rubric-table td:nth-child(1){width:18%}
+
+.admin-student-rubric-table th:nth-child(2),
+.admin-student-rubric-table td:nth-child(2){width:7%}
+
+.admin-student-rubric-table th:nth-child(3),
+.admin-student-rubric-table td:nth-child(3){width:8%}
+
+.admin-student-rubric-table th:nth-child(4),
+.admin-student-rubric-table td:nth-child(4){width:9%}
+
+.admin-student-rubric-table th:nth-child(5),
+.admin-student-rubric-table td:nth-child(5){width:11%}
+
+.admin-student-rubric-table th:nth-child(6),
+.admin-student-rubric-table td:nth-child(6){width:14%}
+
+.admin-student-rubric-table th:nth-child(7),
+.admin-student-rubric-table td:nth-child(7){width:14%}
+
+.admin-student-rubric-table th:nth-child(8),
+.admin-student-rubric-table td:nth-child(8){width:19%}
+
+.admin-student-rubric-table th:nth-child(n+2):nth-child(-n+7),
+.admin-student-rubric-table td:nth-child(n+2):nth-child(-n+7){
+    text-align:center;
+}
+
+.admin-student-rubric-table td:nth-child(2),
+.admin-student-rubric-table td:nth-child(3),
+.admin-student-rubric-table td:nth-child(4),
+.admin-student-rubric-table td:nth-child(5),
+.admin-student-rubric-table td:nth-child(6),
+.admin-student-rubric-table td:nth-child(7){
+    white-space:nowrap;
+}
+
+.admin-student-rubric-table td:nth-child(1),
+.admin-student-rubric-table td:nth-child(8){
+    text-align:left;
+    white-space:normal;
+    word-break:normal;
+    overflow-wrap:break-word;
+}
+
+.admin-student-rubric-table tbody tr{
+    height:auto !important;
+}
+
+/* Catatan dosen boleh membungkus per kata, tetapi tidak lagi
+   mendapat kolom nyaris 0px yang sebelumnya membuat baris menjulang. */
+.admin-student-rubric-table .student-teacher-note{
+    min-width:0 !important;
+    max-width:none !important;
+    padding:11px 14px !important;
+    white-space:normal !important;
+    word-break:normal !important;
+    overflow-wrap:break-word !important;
+    hyphens:none;
+    line-height:1.45;
+    color:#475569;
+    vertical-align:middle !important;
+}
+
+/* ---------- Portal mahasiswa publik: 7 kolom ---------- */
+.public-student-rubric-table{
+    width:100%;
+    min-width:0 !important;
+    table-layout:fixed;
+}
+
+.public-student-rubric-table th:nth-child(1),
+.public-student-rubric-table td:nth-child(1){width:23%}
+
+.public-student-rubric-table th:nth-child(2),
+.public-student-rubric-table td:nth-child(2){width:7%}
+
+.public-student-rubric-table th:nth-child(3),
+.public-student-rubric-table td:nth-child(3){width:10%}
+
+.public-student-rubric-table th:nth-child(4),
+.public-student-rubric-table td:nth-child(4){width:10%}
+
+.public-student-rubric-table th:nth-child(5),
+.public-student-rubric-table td:nth-child(5){width:14%}
+
+.public-student-rubric-table th:nth-child(6),
+.public-student-rubric-table td:nth-child(6){width:16%}
+
+.public-student-rubric-table th:nth-child(7),
+.public-student-rubric-table td:nth-child(7){width:20%}
+
+.public-student-rubric-table th:nth-child(n+2):nth-child(-n+6),
+.public-student-rubric-table td:nth-child(n+2):nth-child(-n+6){
+    text-align:center;
+}
+
+.public-student-rubric-table td:nth-child(2),
+.public-student-rubric-table td:nth-child(3),
+.public-student-rubric-table td:nth-child(4),
+.public-student-rubric-table td:nth-child(5),
+.public-student-rubric-table td:nth-child(6){
+    white-space:nowrap;
+}
+
+.public-student-rubric-table td:nth-child(1),
+.public-student-rubric-table td:nth-child(7){
+    text-align:left;
+    white-space:normal;
+    word-break:normal;
+    overflow-wrap:break-word;
+}
+
+.public-student-rubric-table .student-teacher-note{
+    min-width:0 !important;
+    max-width:none !important;
+    white-space:normal !important;
+    word-break:normal !important;
+    overflow-wrap:break-word !important;
+    line-height:1.45;
+    color:#475569;
+}
+
+/* Wrapper tabel portal tetap boleh scroll horizontal. Jangan disembunyikan
+   pada desktop karena tabel presensi dapat berisi P1-P16 atau lebih. */
+.student-portal-body .table-wrap,
+.portal-shell .table-wrap{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto;
+    scrollbar-gutter:stable;
+}
+
+@media(max-width:900px){
+    .admin-student-rubric-table{
+        min-width:860px !important;
+    }
+
+    .public-student-rubric-table{
+        min-width:760px !important;
+    }
+}
+
 @media(max-width:800px){
   .student-progress-grid{grid-template-columns:1fr}
   .rubric-detail-card{position:fixed;left:16px;right:16px;top:18%;width:auto;max-height:65vh;overflow:auto}
 }
+
 @media(max-width:720px){
   .student-portal-header-inner{min-height:auto;padding:13px 0}
   .student-portal-main{padding-top:20px}
@@ -478,3 +650,569 @@ table thead th[data-sortable-column]:focus-visible {
     border-radius: 10px;
 }
 
+
+/* =========================================================
+   MODERN SLIDING / COLLAPSIBLE SIDEBAR
+   Desktop: 288px -> 78px (ikon saja)
+   Mobile/tablet: off-canvas + backdrop
+   ========================================================= */
+
+:root{
+    --sidebar-expanded:288px;
+    --sidebar-collapsed:78px;
+    --sidebar-bg-top:#073f3c;
+    --sidebar-bg-bottom:#075853;
+    --sidebar-text:#e6fffb;
+    --sidebar-muted:#a7d9d5;
+}
+
+.app{
+    grid-template-columns:var(--sidebar-expanded) minmax(0,1fr);
+    transition:grid-template-columns .26s cubic-bezier(.2,.8,.2,1);
+}
+
+.sidebar{
+    width:var(--sidebar-expanded);
+    padding:16px 14px 18px;
+    gap:14px;
+    overflow-x:hidden;
+    background:
+        radial-gradient(circle at 16% 7%,rgba(94,234,212,.16),transparent 28%),
+        linear-gradient(180deg,var(--sidebar-bg-top) 0%,var(--sidebar-bg-bottom) 100%);
+    border-right:1px solid rgba(255,255,255,.08);
+    box-shadow:12px 0 34px rgba(15,23,42,.08);
+    transition:
+        width .26s cubic-bezier(.2,.8,.2,1),
+        transform .26s cubic-bezier(.2,.8,.2,1),
+        padding .26s ease,
+        box-shadow .26s ease;
+}
+
+.brand{
+    min-height:72px;
+    gap:12px;
+    padding:10px 9px 14px;
+    border-bottom:1px solid rgba(255,255,255,.12);
+}
+
+.brand-mark{
+    width:46px;
+    height:46px;
+    min-width:46px;
+    border-radius:14px;
+    box-shadow:0 8px 22px rgba(0,0,0,.12);
+}
+
+.brand-copy{
+    min-width:0;
+    opacity:1;
+    transform:translateX(0);
+    transition:opacity .18s ease,transform .22s ease;
+}
+
+.brand h1{
+    overflow:hidden;
+    margin:0 0 4px;
+    color:#fff;
+    font-size:15px;
+    line-height:1.2;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.brand p{
+    display:-webkit-box;
+    overflow:hidden;
+    margin:0;
+    color:var(--sidebar-muted);
+    font-size:11px;
+    line-height:1.4;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+}
+
+.nav{
+    display:grid;
+    gap:4px;
+}
+
+.nav a{
+    position:relative;
+    min-height:44px;
+    padding:10px 11px;
+    border:1px solid transparent;
+    border-radius:12px;
+    color:#d9f5f2;
+    text-decoration:none;
+    transition:
+        background .16s ease,
+        border-color .16s ease,
+        color .16s ease,
+        transform .16s ease,
+        box-shadow .16s ease;
+}
+
+.nav a:hover{
+    transform:translateX(2px);
+    background:rgba(255,255,255,.085);
+    border-color:rgba(255,255,255,.08);
+    color:#fff;
+}
+
+.nav a.active{
+    background:linear-gradient(135deg,rgba(94,234,212,.18),rgba(255,255,255,.10));
+    border-color:rgba(153,246,228,.20);
+    color:#fff;
+    box-shadow:inset 3px 0 0 #5eead4,0 8px 24px rgba(0,0,0,.08);
+}
+
+.nav .ico{
+    display:inline-grid;
+    width:24px;
+    min-width:24px;
+    height:24px;
+    place-items:center;
+    font-size:14px;
+    line-height:1;
+}
+
+.nav-label{
+    overflow:hidden;
+    opacity:1;
+    white-space:nowrap;
+    transition:opacity .15s ease,width .22s ease;
+}
+
+.side-note{
+    margin-top:auto;
+    padding:12px 13px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    background:rgba(255,255,255,.07);
+    color:#d6f4f1;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.sidebar-toggle{
+    display:inline-flex !important;
+    width:42px;
+    min-width:42px;
+    height:42px;
+    padding:0;
+    border-color:#e2e8f0;
+    border-radius:13px;
+    background:#fff;
+    color:#0f4f4a;
+    font-size:20px;
+    box-shadow:0 4px 14px rgba(15,23,42,.06);
+    transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+
+.sidebar-toggle:hover{
+    transform:translateY(-1px);
+    border-color:#b9ded9;
+    background:#f0fdfa;
+    box-shadow:0 8px 20px rgba(15,118,110,.10);
+}
+
+.sidebar-toggle:focus-visible,
+.nav a:focus-visible{
+    outline:3px solid rgba(45,212,191,.32);
+    outline-offset:2px;
+}
+
+.sidebar-backdrop{
+    position:fixed;
+    inset:0;
+    z-index:80;
+    display:none;
+    border:0;
+    padding:0;
+    background:rgba(15,23,42,.46);
+    backdrop-filter:blur(2px);
+}
+
+.sidebar-backdrop.show{
+    display:block;
+}
+
+body.sidebar-mobile-open{
+    overflow:hidden;
+}
+
+@media(min-width:901px){
+    .app.sidebar-collapsed{
+        grid-template-columns:var(--sidebar-collapsed) minmax(0,1fr);
+    }
+
+    .app.sidebar-collapsed .sidebar{
+        width:var(--sidebar-collapsed);
+        padding-left:10px;
+        padding-right:10px;
+    }
+
+    .app.sidebar-collapsed .brand{
+        justify-content:center;
+        padding-left:0;
+        padding-right:0;
+    }
+
+    .app.sidebar-collapsed .brand-copy,
+    .app.sidebar-collapsed .side-note{
+        width:0;
+        max-width:0;
+        margin:0;
+        padding:0;
+        overflow:hidden;
+        border:0;
+        opacity:0;
+        pointer-events:none;
+        transform:translateX(-6px);
+    }
+
+    .app.sidebar-collapsed .brand-mark{
+        width:46px;
+        height:46px;
+        min-width:46px;
+    }
+
+    .app.sidebar-collapsed .nav a{
+        justify-content:center;
+        gap:0;
+        padding-left:10px;
+        padding-right:10px;
+    }
+
+    .app.sidebar-collapsed .nav a:hover{
+        transform:none;
+    }
+
+    .app.sidebar-collapsed .nav a.active{
+        box-shadow:inset 0 0 0 1px rgba(153,246,228,.16),0 8px 22px rgba(0,0,0,.10);
+    }
+
+    .app.sidebar-collapsed .nav-label{
+        width:0;
+        opacity:0;
+        pointer-events:none;
+    }
+
+    .app.sidebar-collapsed .nav .ico{
+        width:28px;
+        min-width:28px;
+        font-size:15px;
+    }
+}
+
+@media(max-width:900px){
+    .app{
+        grid-template-columns:1fr;
+    }
+
+    .sidebar{
+        position:fixed;
+        top:0;
+        left:0;
+        z-index:90;
+        width:min(86vw,var(--sidebar-expanded));
+        max-width:var(--sidebar-expanded);
+        transform:translateX(-105%);
+        box-shadow:18px 0 48px rgba(15,23,42,.28);
+    }
+
+    .sidebar.open{
+        left:0;
+        transform:translateX(0);
+    }
+}
+
+
+/* =========================================================
+   FILTER INTERAKTIF PRESENSI
+   ========================================================= */
+
+.attendance-filter-bar{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    flex-wrap:wrap;
+    margin-top:12px;
+}
+
+.attendance-filter-button{
+    border:1px solid transparent;
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:9px;
+    font-weight:900;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    transition:transform .1s ease,box-shadow .15s ease,border-color .15s ease;
+}
+
+.attendance-filter-button:hover{
+    transform:translateY(-1px);
+}
+
+.attendance-filter-button.active{
+    box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(15,118,110,.22);
+}
+
+.attendance-filter-button.ok{color:#166534;background:var(--okSoft);border-color:#bbf7d0}
+.attendance-filter-button.info{color:#1d4ed8;background:var(--infoSoft);border-color:#bfdbfe}
+.attendance-filter-button.warn{color:#92400e;background:var(--warnSoft);border-color:#fde68a}
+.attendance-filter-button.danger{color:#991b1b;background:var(--dangerSoft);border-color:#fecaca}
+.attendance-filter-button.neutral{color:#475467;background:#f2f4f7;border-color:#e4e7ec}
+.attendance-filter-button.all{color:var(--brand2);background:#f0fdfa;border-color:#99f6e4}
+
+
+/* =========================================================
+   PRESENSI PORTAL MAHASISWA - HORIZONTAL PER PERTEMUAN
+   ========================================================= */
+
+.portal-attendance-scroll{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto !important;
+    overflow-y:hidden;
+    padding-bottom:6px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-gutter:stable;
+}
+
+.portal-attendance-table{
+    width:max-content;
+    min-width:100%;
+    table-layout:auto;
+}
+
+.portal-attendance-table th,
+.portal-attendance-table td{
+    min-width:76px;
+    text-align:center;
+    white-space:nowrap;
+}
+
+.portal-attendance-table td .badge{
+    justify-content:center;
+    min-width:54px;
+}
+
+/* Scrollbar dibuat cukup terlihat agar pengguna tahu P14-P16 masih ada. */
+.portal-attendance-scroll::-webkit-scrollbar{
+    height:9px;
+}
+
+.portal-attendance-scroll::-webkit-scrollbar-track{
+    background:#eef2f6;
+    border-radius:999px;
+}
+
+.portal-attendance-scroll::-webkit-scrollbar-thumb{
+    background:#aab4c3;
+    border-radius:999px;
+}
+
+.portal-attendance-scroll::-webkit-scrollbar-thumb:hover{
+    background:#7f8a9a;
+}
+
+
+/* =========================================================
+   MODAL DETAIL PENILAIAN - Admin > Portal Mahasiswa
+   Menggunakan native Popover API agar panel berada di top layer,
+   tidak terpotong table-wrap, dan tidak mengubah tinggi baris tabel.
+   ========================================================= */
+.assessment-trigger{
+    white-space:nowrap;
+}
+
+.assessment-popover{
+    width:min(520px,calc(100vw - 32px));
+    max-width:520px;
+    max-height:min(720px,calc(100vh - 32px));
+    margin:auto;
+    padding:0;
+    border:0;
+    border-radius:18px;
+    background:#fff;
+    color:var(--text);
+    box-shadow:0 30px 80px rgba(15,23,42,.28);
+    overflow:hidden;
+}
+
+.assessment-popover::backdrop{
+    background:rgba(15,23,42,.48);
+    backdrop-filter:blur(2px);
+}
+
+.assessment-popover-inner{
+    max-height:min(720px,calc(100vh - 32px));
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    padding:22px;
+}
+
+.assessment-popover-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--line);
+}
+
+.assessment-popover-kicker{
+    display:block;
+    margin-bottom:4px;
+    color:var(--muted);
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.assessment-popover-head h3{
+    margin:0;
+    font-size:18px;
+    line-height:1.35;
+    overflow-wrap:anywhere;
+}
+
+.assessment-popover-close{
+    flex:0 0 36px;
+    width:36px;
+    height:36px;
+    display:grid;
+    place-items:center;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:#475569;
+    font-size:24px;
+    line-height:1;
+    cursor:pointer;
+    transition:background .15s ease,border-color .15s ease,transform .15s ease;
+}
+
+.assessment-popover-close:hover{
+    background:#f8fafc;
+    border-color:#cbd5e1;
+}
+
+.assessment-popover-close:active{
+    transform:scale(.96);
+}
+
+.assessment-score-panel{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin:18px 0;
+    padding:16px;
+    border:1px solid #dbe4ee;
+    border-radius:14px;
+    background:#f8fafc;
+}
+
+.assessment-score-panel>div{
+    min-width:0;
+}
+
+.assessment-score-panel>div>span{
+    display:block;
+    margin-bottom:2px;
+    color:var(--muted);
+    font-size:10px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+.assessment-score-panel>div>strong{
+    display:block;
+    font-size:26px;
+    line-height:1.1;
+    letter-spacing:-.03em;
+}
+
+.assessment-section{
+    margin-top:18px;
+}
+
+.assessment-section-title{
+    margin-bottom:8px;
+    color:#475569;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+}
+
+.assessment-description{
+    margin:0;
+    color:#475569;
+    font-size:12px;
+    line-height:1.7;
+    white-space:normal;
+    word-break:normal;
+    overflow-wrap:anywhere;
+}
+
+.assessment-teacher-note{
+    font-size:12px;
+    line-height:1.65;
+    white-space:normal;
+    word-break:normal;
+    overflow-wrap:anywhere;
+}
+
+.assessment-rubric-list{
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#fff;
+}
+
+.assessment-rubric-list .rubric-criterion{
+    padding:10px 12px;
+    font-size:11px;
+}
+
+.assessment-rubric-list .rubric-criterion:last-child{
+    border-bottom:0;
+}
+
+.assessment-disclaimer{
+    margin:14px 0 0!important;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+    text-align:center;
+    line-height:1.5!important;
+}
+
+/* Popover tidak boleh memengaruhi ukuran sel/row tabel. */
+.admin-student-rubric-table td:nth-child(7){
+    position:relative;
+    overflow:visible;
+}
+
+@media(max-width:640px){
+    .assessment-popover{
+        width:calc(100vw - 20px);
+        max-height:calc(100vh - 20px);
+        border-radius:14px;
+    }
+
+    .assessment-popover-inner{
+        max-height:calc(100vh - 20px);
+        padding:16px;
+    }
+
+    .assessment-score-panel{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+}
